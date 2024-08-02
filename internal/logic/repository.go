@@ -204,7 +204,7 @@ func (r *Repository) handleInitialPull(ctx context.Context, delivery amqp091.Del
 		job.commits = commits
 		jobs <- job
 
-		if link == "" || strings.Contains(link, "next") {
+		if link == "" || !strings.Contains(link, "next") {
 			break
 		}
 

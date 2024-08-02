@@ -12,15 +12,14 @@ type CommitAuthor struct {
 
 // Commit defines the commit information persisted
 type Commit struct {
-	Id        string       `json:"id" bun:"id,pk"`
-	RepoId    string       `json:"repo_id" bun:"repo_id,unique:repo_commit"`
-	Sha       string       `json:"sha" bun:"sha,unique:repo_commit"`
-	Message   string       `json:"message" bun:"message"`
-	Author    CommitAuthor `json:"author" bun:"author"`
-	Date      time.Time    `json:"commit_date" bun:"commit_date"`
-	URL       string       `json:"url" bun:"url"`
-	AddedAt   time.Time    `json:"added_at" bun:"added_at"`
-	DeletedAt time.Time    `json:"deleted_at" bun:"deleted_at,soft_delete,nullzero"`
+	Id      string       `json:"id" bun:"id,pk"`
+	RepoId  string       `json:"repo_id" bun:"repo_id,unique:repo_commit"`
+	Sha     string       `json:"sha" bun:"sha,unique:repo_commit"`
+	Message string       `json:"message" bun:"message"`
+	Author  CommitAuthor `json:"author" bun:"author"`
+	Date    time.Time    `json:"commit_date" bun:"commit_date"`
+	URL     string       `json:"url" bun:"url"`
+	AddedAt time.Time    `json:"added_at" bun:"added_at"`
 }
 
 type ContributorDetail struct {
