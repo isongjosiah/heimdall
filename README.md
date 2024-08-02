@@ -73,21 +73,43 @@ The application uses two main tables:
 
 1. **Repositories**
     - Stores metadata about each repository.
-
-| Column | Type    |
-|--------|---------|
-| ID     | VARCHAR |
-| Name   | VARCHAR |
+   
+      | Column Name       | PostgreSQL Type | Description                                         |
+            |-------------------|-----------------|-----------------------------------------------------|
+      | id                | UUID            | Primary key identifier for the repository.          |
+      | name              | TEXT            | Name of the repository.                             |
+      | owner             | TEXT            | Owner of the repository.                            |
+      | description       | TEXT            | Description of the repository.                      |
+      | url               | TEXT            | URL link to the repository.                         |
+      | language          | TEXT            | Primary programming language of the repository.     |
+      | fork_count        | INTEGER         | Number of forks of the repository.                  |
+      | stars_count       | INTEGER         | Number of stars the repository has received.        |
+      | open_issue_count  | INTEGER         | Number of open issues in the repository.            |
+      | watchers_count    | INTEGER         | Number of watchers of the repository.               |
+      | pull_from         | TIMESTAMP       | Date and time from which to pull updates.           |
+      | initial_pull_done | BOOLEAN         | Flag indicating if the initial pull was completed.  |
+      | created_at        | TIMESTAMP       | Date and time the repository was created.           |
+      | added_at          | TIMESTAMP       | Date and time the repository was added.             |
+      | updated_at        | TIMESTAMP       | Date and time the repository was last updated.      |
 
 2. **Commits**
     - Stores commit information for each repository.
 
-| Column | Type    |
-|--------|---------|
-| ID     | VARCHAR |
-| Name   | VARCHAR |
+      | Column Name | PostgreSQL Type | Description                              |
+                  |-------------|-----------------|------------------------------------------|
+      | id          | UUID            | Primary key identifier for the commit.   |
+      | repo_id     | UUID            | Unique identifier for the repository.    |
+      | sha         | TEXT            | Unique SHA string for the commit.        |
+      | message     | TEXT            | Commit message.                          |
+      | author      | JSONB           | JSON object containing author details.   |
+      | commit_date | TIMESTAMP       | Date and time of the commit.             |
+      | url         | TEXT            | URL link to the commit.                  |
+      | added_at    | TIMESTAMP       | Date and time the commit was added.      |
 
-### API Endpoints
+    - Notes
+        - `id`: Primary key, stored as a UUID for uniqueness.
+        - `repo_id` and `sha` are combined to form a unique constraint (`unique:repo_commit`).
+        - `author`: Stored as a JSONB to accommodate complex author details.### API Endpoints
 
 - **Add Repository To Track:**
     - **Endpoint:** `/repositories`
@@ -109,6 +131,8 @@ The application uses two main tables:
     - Retrieves paginated commits for a given repository.
 
 API Endpoint documentation is available [here](https://documenter.getpostman.com/view/10427889/2sA3rwLDeg)
+
+Deployed version of the application is available [here](https://heimdall-8hge.onrender.com)
 
 ### Running Tests
 
@@ -142,7 +166,7 @@ kubectl apply -f deployment.yaml
 
 to optimize data retrieval and operations, two indexes were created on the `commits` table:
 
-- **Index on `repo_id`:
+- **Index on `repo_id`**:
     - This significantly reduced the time required for operations involving repository-specific data, such as resetting
       a repository's commit collection or retrieve collections for a repository.
     - **Benefit**: The time to delete records when resetting a repo collection decreased from 2 minutes to 1.5 seconds
