@@ -57,7 +57,7 @@ docker run --env-file=.env heimdall:latest
 
 Configuration settings are managed using environment variables. You can
 customize
-settings such as database connection strings and API tokens  directly via environment
+settings such as database connection strings and API tokens directly via environment
 variables.
 
 ### Usage
@@ -81,7 +81,7 @@ The application uses two main tables:
 
 2. **Commits**
     - Stores commit information for each repository.
-  
+
 | Column | Type    |
 |--------|---------|
 | ID     | VARCHAR |
@@ -90,8 +90,9 @@ The application uses two main tables:
 ### API Endpoints
 
 - **Add Repository To Track:**
-  - **Endpoint:** `/repositories`
-  - Adds a GitHub repository to track
+    - **Endpoint:** `/repositories`
+    - Adds a GitHub repository to track
+
 ```json
 {
   "repo_name": "chromium",
@@ -99,30 +100,60 @@ The application uses two main tables:
   "fetch_commit_from": "2024-01-01T00:00:00Z"
 }
 ```
+
 - **Get Top N Commit Authors:**
-  - **Endpoint:** `/commits/top-contributors`
-  - Retrieves the top N commit authors by commit counts
+    - **Endpoint:** `/commits/top-contributors`
+    - Retrieves the top N commit authors by commit counts
 - **Get Commits by Repository:**
-  - **Endpoint:** `repositories/commits?repo-name={repoName}`
-  - Retrieves paginated commits for a given repository.
+    - **Endpoint:** `repositories/commits?repo-name={repoName}`
+    - Retrieves paginated commits for a given repository.
+
+API Endpoint documentation is available [here](https://documenter.getpostman.com/view/10427889/2sA3rwLDeg)
 
 ### Running Tests
+
 Run unit tests using the Go testing framework:
+
 ```shell
 go test -v ./...
 ```
 
 ### Deployment
-This application can be deployed using Docker and Kubernetes. A sample deployment configuration (`deployment.yaml`) is 
+
+This application can be deployed using Docker and Kubernetes. A sample deployment configuration (`deployment.yaml`) is
 provided for Kubernetes.
+
 1. **Build and push the Docker image:**
+
 ```shell
 docker build -t your-docker-repo/heimdall:latest .
 docker push your-docker-repo/heimdall:latest
 
 ```
+
 2. **Deploy to Kubernetes:**
+
 ```shell
 kubectl apply -f deployment.yaml
 
 ```
+
+### Optimizing Data Retrieval
+
+to optimize data retrieval and operations, two indexes were created on the `commits` table:
+
+- **Index on `repo_id`:
+    - This significantly reduced the time required for operations involving repository-specific data, such as resetting
+      a repository's commit collection or retrieve collections for a repository.
+    - **Benefit**: The time to delete records when resetting a repo collection decreased from 2 minutes to 1.5 seconds
+    ```sql
+    CREATE INDEX idx_commits_repo_id ON commits(repo_id)
+    ```
+
+- **Index on `author`**:
+    - This index optimizes queries that filter or sort commits by author, improving performance of operations like
+      retrieving
+      the top N commit authors.
+  ```sql
+  CREATE INDEX idx_commits_author ON commits (author);
+  ```

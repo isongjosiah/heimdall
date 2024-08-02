@@ -74,24 +74,19 @@ func (m *Monitor) processCommitAddition(wg *sync.WaitGroup, repoJob chan model.G
 	defer wg.Done()
 	for repo := range repoJob {
 
-		pullFrom := repo.PullFrom
+		var pullFrom time.Time
 		var err error
-
-		if pullFrom.IsZero() {
-			// retrieve the last commit
-			if err := function.Retry(3, time.Second*2, func() error {
-				pullFrom, err = m.CommitDAL.RepoLastCommitDate(context.Background(), repo.Id)
-				return err
-			}); err != nil {
-				log.Printf("Failed to get last commit date for repo %d: %v", repo.Id, err)
-				continue
-			}
+		if err := function.Retry(3, time.Second*2, func() error {
+			pullFrom, err = m.CommitDAL.RepoLastCommitDate(context.Background(), repo.Id)
+			return err
+		}); err != nil {
+			log.Printf("Failed to get last commit date for repo %s: %s", repo.Id, err.Error())
+			continue
 		}
 
 		var (
-			commits     []github.Commit
-			link        = ""
-			commitAdded int
+			commits []github.Commit
+			link    = ""
 		)
 
 		for {
@@ -123,8 +118,8 @@ func (m *Monitor) processCommitAddition(wg *sync.WaitGroup, repoJob chan model.G
 
 			if err := function.Retry(3, time.Second*2, func() error {
 				return m.CommitDAL.AddCommits(context.Background(), newCommits)
-			}); err == nil {
-				commitAdded++
+			}); err != nil {
+				log.Printf("[Commit.Addition] failed to add commits from %s for %s\n", link, repo.Id)
 			}
 
 			if link == "" {
@@ -137,13 +132,6 @@ func (m *Monitor) processCommitAddition(wg *sync.WaitGroup, repoJob chan model.G
 
 		}
 
-		if !repo.PullFrom.IsZero() && commitAdded > 0 {
-			if err := function.Retry(5, time.Second*2, func() error {
-				return m.RepoDAL.UpdateRepo(context.Background(), repo.Id, map[string]any{"pull_from": time.Time{}})
-			}); err != nil {
-				log.Printf("Failed to reset repo %d pull_from : %v", repo.Id, err)
-			}
-		}
 	}
 
 }

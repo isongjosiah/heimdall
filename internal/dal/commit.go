@@ -73,7 +73,13 @@ func (scd SQLCommitDAL) CommitsByRepoId(ctx context.Context, repoId string, quer
 }
 
 func (scd SQLCommitDAL) RepoLastCommitDate(ctx context.Context, repoId string) (time.Time, error) {
-	return time.Time{}, nil
+
+	var commit model.Commit
+	crud := crudder.DefaultCrudder(&commit, scd.Db)
+	crud.Filter.Sorter.Desc = []string{"commit_date"}
+	err := crud.Fetch()
+
+	return commit.Date, err
 }
 
 func (scd SQLCommitDAL) AddCommits(ctx context.Context, commits []model.Commit) error {

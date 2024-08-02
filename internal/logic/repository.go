@@ -218,7 +218,7 @@ func (r *Repository) handleInitialPull(ctx context.Context, delivery amqp091.Del
 	wg.Wait()
 	if insertCount.Load() > 0 {
 		if err := function.Retry(10, time.Second*2, func() error {
-			return r.RepoDAL.UpdateRepo(context.Background(), repo.RepoId, map[string]any{"initial_pull_done": true})
+			return r.RepoDAL.UpdateRepo(context.Background(), repo.RepoId, map[string]any{"initial_pull_done": true, "pull_from": time.Time{}})
 		}); err != nil {
 			log.Println("[Commit.Addition] failed to update repository status for initial commit " + err.Error())
 		}
@@ -270,12 +270,23 @@ func (r *Repository) ResetRepositoryCollection(ctx context.Context, payload mode
 	err = r.SqlDB.RunInTx(context.Background(), &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
 		// delete all commits recorded
 		ctx = context.WithValue(ctx, "sql-tx", tx)
-		if err := r.CommitDAL.DeleteRepoCommits(ctx, payload.RepoName); err != nil {
+		if err := r.CommitDAL.DeleteRepoCommits(ctx, repo.Id); err != nil {
 			return err
 		}
 
 		// update commit date
-		return r.RepoDAL.UpdateRepo(ctx, repo.Id, map[string]any{"pull_from": payload.StartFrom})
+		if err := r.RepoDAL.UpdateRepo(ctx, repo.Id, map[string]any{"pull_from": payload.StartFrom}); err != nil {
+			return err
+		}
+
+		return (queue.RMQProducer{
+			Queue: "pull-commit",
+		}).PublishMessage(model.AddRepositoryInput{
+			RepoName:        repo.Name,
+			RepoId:          repo.Id,
+			RepoOwner:       repo.Owner,
+			FetchCommitFrom: payload.StartFrom,
+		})
 	})
 	if err != nil {
 		return value.Error, "Failed to reset repository collection", err

@@ -55,36 +55,9 @@ func main() {
 		log.Fatal(restApi.Serve())
 	}()
 
-	//go func() {
-	//
-	//	var (
-	//		commits []github.Commit
-	//		link    string
-	//		err     error
-	//	)
-	//
-	//	for {
-	//		commits, link, err = restApi.Dep.GitHub.ListCommit("chromium", "chromium", time.Time{}, link)
-	//		if err != nil {
-	//			break
-	//		}
-	//		if len(commits) == 0 {
-	//			break
-	//		}
-	//
-	//		fmt.Println(commits)
-	//
-	//		if link == "" {
-	//			break
-	//		}
-	//
-	//		nextLink := strings.Split(strings.Split(link, ",")[0], ";")[0]
-	//		nextLink = strings.TrimPrefix(nextLink, "<")
-	//		link = strings.TrimSuffix(nextLink, ">")
-	//		fmt.Println(link)
-	//
-	//	}
-	//}()
+	go func() {
+		restApi.Logic.Monitor.RetrieveCommit()
+	}()
 
 	// graceful shutdown
 	stopChan := make(chan os.Signal, 1)

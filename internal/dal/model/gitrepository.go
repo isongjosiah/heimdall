@@ -3,7 +3,7 @@ package model
 import "time"
 
 type GitRepository struct {
-	Id              string    `json:"id" bun:"id"`
+	Id              string    `json:"id" bun:"id,pk"`
 	Name            string    `json:"name" bun:"name"`
 	Owner           string    `json:"owner" bun:"owner"`
 	Description     string    `json:"description" bun:"description"`
