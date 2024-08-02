@@ -75,7 +75,7 @@ The application uses two main tables:
     - Stores metadata about each repository.
    
       | Column Name       | PostgreSQL Type | Description                                         |
-            |-------------------|-----------------|-----------------------------------------------------|
+      |-------------------|-----------------|-----------------------------------------------------|
       | id                | UUID            | Primary key identifier for the repository.          |
       | name              | TEXT            | Name of the repository.                             |
       | owner             | TEXT            | Owner of the repository.                            |
@@ -96,7 +96,7 @@ The application uses two main tables:
     - Stores commit information for each repository.
 
       | Column Name | PostgreSQL Type | Description                              |
-                  |-------------|-----------------|------------------------------------------|
+      |-------------|-----------------|------------------------------------------|
       | id          | UUID            | Primary key identifier for the commit.   |
       | repo_id     | UUID            | Unique identifier for the repository.    |
       | sha         | TEXT            | Unique SHA string for the commit.        |
