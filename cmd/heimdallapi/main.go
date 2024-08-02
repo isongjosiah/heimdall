@@ -55,10 +55,6 @@ func main() {
 		log.Fatal(restApi.Serve())
 	}()
 
-	go func() {
-		restApi.Logic.Monitor.RetrieveCommit()
-	}()
-
 	// graceful shutdown
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
