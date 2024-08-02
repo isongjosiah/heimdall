@@ -109,7 +109,9 @@ The application uses two main tables:
     - Notes
         - `id`: Primary key, stored as a UUID for uniqueness.
         - `repo_id` and `sha` are combined to form a unique constraint (`unique:repo_commit`).
-        - `author`: Stored as a JSONB to accommodate complex author details.### API Endpoints
+        - `author`: Stored as a JSONB to accommodate complex author details.
+
+### API Endpoints
 
 - **Add Repository To Track:**
     - **Endpoint:** `/repositories`
