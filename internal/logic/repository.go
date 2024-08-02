@@ -60,7 +60,7 @@ func (r *Repository) Commits(ctx context.Context, repoName string, queryValue ur
 func (r *Repository) AddNewRepository(ctx context.Context, payload model.AddRepositoryInput) (string, string, error) {
 
 	err := (queue.RMQProducer{
-		Queue: "pull-commit",
+		Queue: "pull-repo",
 	}).PublishMessage(payload)
 	if err != nil {
 		return value.Error, "Unable to process request. Please try again later", err
@@ -157,6 +157,21 @@ func (r *Repository) handleInitialPull(ctx context.Context, delivery amqp091.Del
 		queue.Nack(delivery)
 	}
 
+	// confirm the repository has been
+	exists, err := r.RepoDAL.RepoExists(ctx, repo.RepoName)
+	if err != nil {
+		log.Println("Unable to check if repository " + repo.RepoName + " exists: " + err.Error())
+		queue.Nack(delivery)
+	}
+
+	if !exists {
+		err := delivery.Reject(false)
+		if err != nil {
+			log.Println("Unable to reject initial pull request for invalid repo " + err.Error())
+		}
+		return
+	}
+
 	var (
 		wg          sync.WaitGroup
 		commits     []github.Commit
@@ -189,11 +204,11 @@ func (r *Repository) handleInitialPull(ctx context.Context, delivery amqp091.Del
 		job.commits = commits
 		jobs <- job
 
-		if link == "" {
+		if link == "" || strings.Contains(link, "next") {
 			break
 		}
 
-		nextLink := strings.Split(strings.Split(link, ",")[1], ";")[0]
+		nextLink := strings.Split(strings.Split(link, ",")[0], ";")[0]
 		nextLink = strings.TrimPrefix(nextLink, "<")
 		link = strings.TrimSuffix(nextLink, ">")
 

@@ -57,7 +57,7 @@ func (rd SQLGitRepositoryDAL) RepoByName(ctx context.Context, repoName string) (
 func (rd SQLGitRepositoryDAL) AddRepo(ctx context.Context, repo model.GitRepository) error {
 
 	// extract transaction from context
-	tx := ctx.Value("sql-tx").(bun.IDB)
+	tx, _ := ctx.Value("sql-tx").(bun.IDB)
 	if tx == nil {
 		tx = rd.DB
 	}
