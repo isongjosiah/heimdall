@@ -1,0 +1,21 @@
+package queue
+
+const Webhooks = "webhooks"
+const WebhookRetries = "webhook-retries"
+const WelcomeEmailQueue = "welcome-email-queue"
+const EmailQueue = "email-queue"
+const ExportEmail = "export-email"
+const SmsQueue = "sms-queue"
+const RepaymentQueue = "repayment-queue"
+const InternalSlackNotifier = "slack-notifier-queue"
+const ResourceExporter = "resource-exporter"
+const BorrowerUpload = "borrower-uploads"
+const BulkPreQualification = "prequalify"
+const BulkOrigination = "qualified-origination"
+const BankAccountUpload = "bank-account-upload"
+const RepaymentUpload = "repayment-upload"
+const BorrowerMessage = "borrower-message"
+const BulkDisbursement = "bulk-disbursement"
+
+const BulkRepaymentTemplateDownload = "bulk-repayment-template-download"
+const ThirdPartyUpload = "third-party-upload"
